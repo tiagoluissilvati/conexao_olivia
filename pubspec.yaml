@@ -1,0 +1,67 @@
+name: conexaoolivia
+description: "Super App Conexão Olivia"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  mobx: ^2.3.0+1
+  flutter_mobx: ^2.2.0+2
+
+  # Dependency Injection & Modular
+  flutter_modular: ^6.3.2
+
+  # Supabase
+  supabase_flutter: ^2.3.4
+
+  # UI
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+
+  # Utils
+  email_validator: ^2.1.17
+  shared_preferences: ^2.2.2
+  brasil_fields: ^1.15.0
+  cpf_cnpj_validator: ^2.0.0
+  url_launcher: ^6.2.1
+  package_info_plus: ^8.0.0
+  new_version_plus: ^0.0.10
+  # intl não precisa ser declarado explicitamente
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code Generation
+  build_runner: ^2.4.7
+  mobx_codegen: ^2.4.0
+  flutter_launcher_icons: "^0.14.4"
+
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/ic_launcher_xxxhdpi.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/icons/ic_launcher_xxxhdpi.png"
