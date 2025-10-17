@@ -416,6 +416,7 @@ abstract class _AuthStoreBase with Store {
         'email': email,
         'name': name,
         'cpf': cpf.trim(),
+        'needs_password_change': false,
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       };
@@ -550,6 +551,84 @@ abstract class _AuthStoreBase with Store {
         return 'Email inválido.';
       default:
         return 'Erro inesperado. Tente novamente.';
+    }
+  }
+
+  @action
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+
+      print('🔐 === INICIANDO TROCA DE SENHA ===');
+      print('   User ID: ${currentUser?.id}');
+
+      // 1. Verificar senha atual fazendo re-login
+      print('🔍 Verificando senha atual...');
+      try {
+        await SupabaseService.signIn(
+          email: currentUser!.email,
+          password: currentPassword,
+        );
+        print('✅ Senha atual verificada');
+      } catch (e) {
+        print('❌ Senha atual incorreta');
+        errorMessage = 'Senha atual incorreta';
+        return false;
+      }
+
+      // 2. Atualizar senha no Supabase Auth
+      print('🔧 Atualizando senha...');
+      final user = SupabaseService.currentUser;
+      if (user == null) {
+        errorMessage = 'Usuário não autenticado';
+        return false;
+      }
+
+      await SupabaseService.client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+
+      print('✅ Senha atualizada no Auth');
+
+      // 3. Remover flag de troca obrigatória
+      print('🔧 Removendo flag de troca obrigatória...');
+      await SupabaseService.from('profiles')
+          .update({
+        'needs_password_change': false,
+        'updated_at': DateTime.now().toIso8601String(),
+      })
+          .eq('id', user.id);
+
+      print('✅ Flag removida do perfil');
+
+      // 4. Atualizar currentUser local
+      if (currentUser != null) {
+        currentUser = currentUser!.copyWith(
+          needsPasswordChange: false,
+        );
+      }
+
+      print('✅ === TROCA DE SENHA CONCLUÍDA ===');
+      return true;
+
+    } on AuthException catch (e) {
+      print('❌ AuthException: ${e.message}');
+      errorMessage = _getErrorMessage(e.message);
+      return false;
+    } catch (e, stackTrace) {
+      print('❌ === ERRO NA TROCA DE SENHA ===');
+      print('   Erro: $e');
+      print('   Tipo: ${e.runtimeType}');
+      print('   Stack trace: $stackTrace');
+
+      errorMessage = 'Erro ao alterar senha. Tente novamente.';
+      return false;
+    } finally {
+      isLoading = false;
     }
   }
 }

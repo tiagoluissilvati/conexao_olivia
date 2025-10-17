@@ -8,6 +8,7 @@ class UserModel {
   final String? phone;  // Permitir null
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool? needsPasswordChange;
 
   UserModel({
     required this.id,
@@ -17,6 +18,7 @@ class UserModel {
     this.phone,         // Opcional
     required this.createdAt,
     required this.updatedAt,
+    this.needsPasswordChange
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class UserModel {
         name: json['name'] as String,
         cpf: json['cpf']?.toString(), // Converter para String ou null
         phone: json['phone']?.toString(), // Converter para String ou null
+        needsPasswordChange: json['needs_password_change'] != null ? json['needs_password_change'] as bool : false,
         createdAt: json['created_at'] != null
             ? DateTime.parse(json['created_at'] as String)
             : DateTime.now(),
@@ -78,6 +81,9 @@ class UserModel {
     if (phone != null && phone!.isNotEmpty) {
       json['phone'] = phone!;
     }
+    if (needsPasswordChange != null ) {
+      json['needs_password_change'] = needsPasswordChange.toString();
+    }
 
     return json;
   }
@@ -89,7 +95,7 @@ class UserModel {
     String? cpf,
     String? phone,
     DateTime? createdAt,
-    DateTime? updatedAt,
+    DateTime? updatedAt,  bool? needsPasswordChange,
   }) {
     return UserModel(
       id: id ?? this.id,

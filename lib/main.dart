@@ -29,7 +29,7 @@ class ConexaoOliviaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Conexão Olivia',
+      title: 'Olivia Conexão',
       theme: AppTheme.lightTheme,
       routerConfig: Modular.routerConfig,
       debugShowCheckedModeBanner: false,

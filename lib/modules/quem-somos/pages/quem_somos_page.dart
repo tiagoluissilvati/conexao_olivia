@@ -59,7 +59,7 @@ class _QuemSomosPageState extends State<QuemSomosPage>
               SizedBox(height: 16),
               _buildSection(
                 title: 'O Grupo',
-                content: 'Conta com as diretoras: Cláudia de Freitas, Luana Bigatton Minotti, Daniela Bigatton e Cristina Rufini que, juntas, promovem eventos, cursos, palestras e rodada de negócios. Hoje já contamos com 420 empreendedoras no grupo.',
+                content: 'O Grupo Olívias nasceu para reunir mulheres empreendedoras em um espaço de conexão, troca de experiências e fortalecimento dos negócios. Fundado por Cláudia Freitas, ao lado da diretora de Marketing Pati Rojas, conta também com o apoio do Conselho Consultivo e das Olívias com Botom, que representam a força e o engajamento da comunidade.',
                 icon: Icons.group,
                 animation: store.grupoAnimation,
               ),

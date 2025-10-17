@@ -1,3 +1,4 @@
+import 'package:conexaoolivia/modules/auth/pages/change_password_dialog.dart';
 import 'package:conexaoolivia/modules/widgets/custom_button.dart';
 import 'package:conexaoolivia/modules/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
@@ -47,8 +48,23 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         if (success && mounted) {
-          print('✅ Login realizado com sucesso, redirecionando para /home');
-          Modular.to.pushReplacementNamed('/home');
+          print('✅ Login realizado com sucesso');
+
+          // NOVO: Verificar se precisa trocar senha
+          if (_authStore.currentUser?.needsPasswordChange ?? false) {
+            print('⚠️ Usuário precisa trocar senha');
+
+            // Mostrar dialog de troca de senha
+            await showDialog(
+              context: context,
+              barrierDismissible: false, // Não pode fechar clicando fora
+              builder: (context) => const ChangePasswordDialog(),
+            );
+          } else {
+            // Login normal - ir para home
+            print('✅ Redirecionando para /home');
+            Modular.to.pushReplacementNamed('/home');
+          }
         } else {
           print('❌ Login falhou');
           if (_authStore.errorMessage != null) {

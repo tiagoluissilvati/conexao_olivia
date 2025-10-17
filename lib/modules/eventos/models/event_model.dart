@@ -11,6 +11,11 @@ class Event {
   final DateTime updatedAt;
   final String? linkCheckout;
 
+  // NOVOS CAMPOS
+  final bool isFeatured;
+  final String? bannerCarouselUrl;
+  final String? bannerLargeUrl;
+
   Event({
     required this.id,
     required this.title,
@@ -21,13 +26,16 @@ class Event {
     this.createdBy,
     required this.createdAt,
     required this.updatedAt,
-    this.linkCheckout
+    this.linkCheckout,
+    this.isFeatured = false,
+    this.bannerCarouselUrl,
+    this.bannerLargeUrl,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['id'],
-      title: json['title'],
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
       description: json['description'],
       eventDate: DateTime.parse(json['event_date']),
       eventTime: json['event_time'],
@@ -35,41 +43,28 @@ class Event {
       createdBy: json['created_by'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-      linkCheckout: json['link_checkout']
+      linkCheckout: json['link_checkout'],
+      isFeatured: json['is_featured'] ?? false,
+      bannerCarouselUrl: json['banner_carousel_url'],
+      bannerLargeUrl: json['banner_large_url'],
     );
   }
 
   Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{
+    return {
+      if (id.isNotEmpty) 'id': id,
       'title': title,
-      'event_date': eventDate.toIso8601String().split('T')[0],
+      'description': description,
+      'event_date': eventDate.toIso8601String(),
+      'event_time': eventTime,
+      'location': location,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'link_checkout': linkCheckout,
+      'is_featured': isFeatured,
+      'banner_carousel_url': bannerCarouselUrl,
+      'banner_large_url': bannerLargeUrl,
     };
-
-    // Adicionar campos opcionais apenas se não forem nulos/vazios
-    if (description != null && description!.isNotEmpty) {
-      json['description'] = description;
-    }
-
-    if (eventTime != null && eventTime!.isNotEmpty) {
-      json['event_time'] = eventTime;
-    }
-
-    if (location != null && location!.isNotEmpty) {
-      json['location'] = location;
-    }
-
-    // Para operações de UPDATE, incluir o ID
-    if (id.isNotEmpty) {
-      json['id'] = id;
-    }
-
-    if (linkCheckout != null && linkCheckout!.isNotEmpty) {
-      json['link_checkout'] = linkCheckout;
-    }
-    // Não incluir: created_by, created_at, updated_at
-    // Estes são gerenciados automaticamente pelo Supabase
-
-    return json;
   }
 
   Event copyWith({
@@ -82,6 +77,10 @@ class Event {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? linkCheckout,
+    bool? isFeatured,
+    String? bannerCarouselUrl,
+    String? bannerLargeUrl,
   }) {
     return Event(
       id: id ?? this.id,
@@ -93,51 +92,28 @@ class Event {
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      linkCheckout: linkCheckout ?? this.linkCheckout,
+      isFeatured: isFeatured ?? this.isFeatured,
+      bannerCarouselUrl: bannerCarouselUrl ?? this.bannerCarouselUrl,
+      bannerLargeUrl: bannerLargeUrl ?? this.bannerLargeUrl,
     );
   }
 
-  // Getters para formatação
-  String get formattedDate {
-    final months = [
-      '', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
-    ];
-    return '${eventDate.day}\n${months[eventDate.month]}';
-  }
-
-  String get weekDay {
-    final weekDays = [
-      'DOMINGO', 'SEGUNDA-FEIRA', 'TERÇA-FEIRA', 'QUARTA-FEIRA',
-      'QUINTA-FEIRA', 'SEXTA-FEIRA', 'SÁBADO'
-    ];
-    return weekDays[eventDate.weekday % 7];
-  }
-
   String get formattedTime {
-
     if (eventTime == null || eventTime!.isEmpty) return '';
-
-    // Se já está no formato HH:MM, retornar como está
-    if (RegExp(r'^([01]?[0-9]|2[0-3]):([0-5][0-9])$').hasMatch(eventTime!)) {
-      return eventTime!;
-    }
-
-    // Se está no formato HH:MM:SS, remover os segundos
-    if (eventTime!.contains(':')) {
-      List<String> parts = eventTime!.split(':');
-      if (parts.length >= 2) {
-        return '${parts[0]}:${parts[1]}';
-      }
-    }
-
     return eventTime!;
   }
 
-  String getMonthAbbreviation() {
-    const months = [
-      '', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
-    ];
-    return months[eventDate.month];
+  String get weekDay {
+    final weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+    return weekdays[eventDate.weekday - 1];
   }
+
+  String getMonthAbbreviation() {
+    final months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+    return months[eventDate.month - 1];
+  }
+
+  bool get hasBannerCarousel => bannerCarouselUrl != null && bannerCarouselUrl!.isNotEmpty;
+  bool get hasBannerLarge => bannerLargeUrl != null && bannerLargeUrl!.isNotEmpty;
 }

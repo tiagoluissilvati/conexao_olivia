@@ -1,5 +1,6 @@
 // stores/event_form_store.dart
 import 'package:mobx/mobx.dart';
+import '../../galeria-eventos/models/image_upload_model.dart';
 import '../models/event_model.dart';
 
 part 'event_form_store.g.dart';
@@ -35,6 +36,23 @@ abstract class EventFormStoreBase with Store {
   @observable
   Event? editingEvent;
 
+  // NOVOS CAMPOS
+  @observable
+  bool isFeatured = false;
+
+  @observable
+  ImageUpload? bannerCarousel;
+
+  @observable
+  ImageUpload? bannerLarge;
+
+  // URLs dos banners existentes (para edição)
+  @observable
+  String? existingBannerCarouselUrl;
+
+  @observable
+  String? existingBannerLargeUrl;
+
   @computed
   bool get isEditing => editingEvent != null;
 
@@ -43,6 +61,12 @@ abstract class EventFormStoreBase with Store {
 
   @computed
   bool get hasError => errorMessage != null;
+
+  @computed
+  bool get hasBannerCarousel => bannerCarousel != null || (existingBannerCarouselUrl != null && existingBannerCarouselUrl!.isNotEmpty);
+
+  @computed
+  bool get hasBannerLarge => bannerLarge != null || (existingBannerLargeUrl != null && existingBannerLargeUrl!.isNotEmpty);
 
   @action
   void setTitle(String value) {
@@ -84,6 +108,34 @@ abstract class EventFormStoreBase with Store {
   void setLink(String value) {
     link = value;
   }
+
+  @action
+  void setIsFeatured(bool value) {
+    isFeatured = value;
+  }
+
+  @action
+  void setBannerCarousel(ImageUpload? image) {
+    bannerCarousel = image;
+  }
+
+  @action
+  void setBannerLarge(ImageUpload? image) {
+    bannerLarge = image;
+  }
+
+  @action
+  void removeBannerCarousel() {
+    bannerCarousel = null;
+    existingBannerCarouselUrl = null;
+  }
+
+  @action
+  void removeBannerLarge() {
+    bannerLarge = null;
+    existingBannerLargeUrl = null;
+  }
+
   @action
   void _clearError() {
     errorMessage = null;
@@ -98,6 +150,11 @@ abstract class EventFormStoreBase with Store {
     location = event.location ?? '';
     selectedDate = event.eventDate;
     link = event.linkCheckout ?? '';
+    isFeatured = event.isFeatured;
+    existingBannerCarouselUrl = event.bannerCarouselUrl;
+    existingBannerLargeUrl = event.bannerLargeUrl;
+    bannerCarousel = null;
+    bannerLarge = null;
     errorMessage = null;
   }
 
@@ -110,6 +167,11 @@ abstract class EventFormStoreBase with Store {
     location = '';
     link = '';
     selectedDate = DateTime.now();
+    isFeatured = false;
+    bannerCarousel = null;
+    bannerLarge = null;
+    existingBannerCarouselUrl = null;
+    existingBannerLargeUrl = null;
     isLoading = false;
     errorMessage = null;
   }
@@ -123,28 +185,32 @@ abstract class EventFormStoreBase with Store {
     final now = DateTime.now();
 
     if (isEditing) {
-      // Para edição, manter o ID existente e outros campos
       return editingEvent!.copyWith(
         title: title.trim(),
         description: description.trim().isEmpty ? null : description.trim(),
         eventDate: selectedDate,
         eventTime: eventTime.trim().isEmpty ? null : eventTime.trim(),
         location: location.trim().isEmpty ? null : location.trim(),
+        linkCheckout: link.trim().isEmpty ? null : link.trim(),
+        isFeatured: isFeatured,
         updatedAt: now,
+        // Manter as URLs existentes se não houver novas imagens
+        bannerCarouselUrl: bannerCarousel != null ? null : existingBannerCarouselUrl,
+        bannerLargeUrl: bannerLarge != null ? null : existingBannerLargeUrl,
       );
     } else {
-      // Para criação, criar evento sem ID (será gerado pelo Supabase)
       return Event(
-        id: '', // ID vazio - será ignorado no toJson()
+        id: '',
         title: title.trim(),
         description: description.trim().isEmpty ? null : description.trim(),
         eventDate: selectedDate,
         eventTime: eventTime.trim().isEmpty ? null : eventTime.trim(),
         location: location.trim().isEmpty ? null : location.trim(),
-        createdBy: null, // Será preenchido automaticamente pelo Supabase
+        createdBy: null,
         createdAt: now,
         updatedAt: now,
-        linkCheckout: link.trim().isEmpty ? null : link.trim()
+        linkCheckout: link.trim().isEmpty ? null : link.trim(),
+        isFeatured: isFeatured,
       );
     }
   }
@@ -154,5 +220,10 @@ abstract class EventFormStoreBase with Store {
       return 'Título é obrigatório';
     }
     return null;
+  }
+
+  @computed
+  bool get hasPendingChanges {
+    return bannerCarousel != null || bannerLarge != null;
   }
 }

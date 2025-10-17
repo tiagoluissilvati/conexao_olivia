@@ -75,14 +75,8 @@ class _SplashPageState extends State<SplashPage>
     // Aguardar fade out
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Navegar para tela apropriada
-    if (mounted) {
-      if (_authStore.isAuthenticated) {
-        Modular.to.pushReplacementNamed('/home');
-      } else {
-        Modular.to.pushReplacementNamed('/auth/login');
-      }
-    }
+    Modular.to.pushReplacementNamed('/auth/');
+
   }
 
   @override

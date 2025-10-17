@@ -22,6 +22,13 @@ mixin _$EventStore on EventStoreBase, Store {
   bool get hasError => (_$hasErrorComputed ??=
           Computed<bool>(() => super.hasError, name: 'EventStoreBase.hasError'))
       .value;
+  Computed<Event?>? _$featuredEventComputed;
+
+  @override
+  Event? get featuredEvent =>
+      (_$featuredEventComputed ??= Computed<Event?>(() => super.featuredEvent,
+              name: 'EventStoreBase.featuredEvent'))
+          .value;
 
   late final _$eventsAtom =
       Atom(name: 'EventStoreBase.events', context: context);
@@ -103,6 +110,22 @@ mixin _$EventStore on EventStoreBase, Store {
     });
   }
 
+  late final _$isUploadingBannersAtom =
+      Atom(name: 'EventStoreBase.isUploadingBanners', context: context);
+
+  @override
+  bool get isUploadingBanners {
+    _$isUploadingBannersAtom.reportRead();
+    return super.isUploadingBanners;
+  }
+
+  @override
+  set isUploadingBanners(bool value) {
+    _$isUploadingBannersAtom.reportWrite(value, super.isUploadingBanners, () {
+      super.isUploadingBanners = value;
+    });
+  }
+
   late final _$loadEventsAsyncAction =
       AsyncAction('EventStoreBase.loadEvents', context: context);
 
@@ -131,16 +154,20 @@ mixin _$EventStore on EventStoreBase, Store {
       AsyncAction('EventStoreBase.createEvent', context: context);
 
   @override
-  Future<bool> createEvent(Event event) {
-    return _$createEventAsyncAction.run(() => super.createEvent(event));
+  Future<bool> createEvent(Event event,
+      {ImageUpload? bannerCarousel, ImageUpload? bannerLarge}) {
+    return _$createEventAsyncAction.run(() => super.createEvent(event,
+        bannerCarousel: bannerCarousel, bannerLarge: bannerLarge));
   }
 
   late final _$updateEventAsyncAction =
       AsyncAction('EventStoreBase.updateEvent', context: context);
 
   @override
-  Future<bool> updateEvent(Event event) {
-    return _$updateEventAsyncAction.run(() => super.updateEvent(event));
+  Future<bool> updateEvent(Event event,
+      {ImageUpload? bannerCarousel, ImageUpload? bannerLarge}) {
+    return _$updateEventAsyncAction.run(() => super.updateEvent(event,
+        bannerCarousel: bannerCarousel, bannerLarge: bannerLarge));
   }
 
   late final _$deleteEventAsyncAction =
@@ -149,6 +176,15 @@ mixin _$EventStore on EventStoreBase, Store {
   @override
   Future<bool> deleteEvent(String id) {
     return _$deleteEventAsyncAction.run(() => super.deleteEvent(id));
+  }
+
+  late final _$deleteBannerAsyncAction =
+      AsyncAction('EventStoreBase.deleteBanner', context: context);
+
+  @override
+  Future<bool> deleteBanner(String eventId, BannerType bannerType) {
+    return _$deleteBannerAsyncAction
+        .run(() => super.deleteBanner(eventId, bannerType));
   }
 
   late final _$EventStoreBaseActionController =
@@ -184,8 +220,10 @@ isLoading: ${isLoading},
 isAdmin: ${isAdmin},
 errorMessage: ${errorMessage},
 selectedEvent: ${selectedEvent},
+isUploadingBanners: ${isUploadingBanners},
 hasEvents: ${hasEvents},
-hasError: ${hasError}
+hasError: ${hasError},
+featuredEvent: ${featuredEvent}
     ''';
   }
 }

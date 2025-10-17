@@ -30,6 +30,27 @@ mixin _$EventFormStore on EventFormStoreBase, Store {
       (_$hasErrorComputed ??= Computed<bool>(() => super.hasError,
               name: 'EventFormStoreBase.hasError'))
           .value;
+  Computed<bool>? _$hasBannerCarouselComputed;
+
+  @override
+  bool get hasBannerCarousel => (_$hasBannerCarouselComputed ??= Computed<bool>(
+          () => super.hasBannerCarousel,
+          name: 'EventFormStoreBase.hasBannerCarousel'))
+      .value;
+  Computed<bool>? _$hasBannerLargeComputed;
+
+  @override
+  bool get hasBannerLarge =>
+      (_$hasBannerLargeComputed ??= Computed<bool>(() => super.hasBannerLarge,
+              name: 'EventFormStoreBase.hasBannerLarge'))
+          .value;
+  Computed<bool>? _$hasPendingChangesComputed;
+
+  @override
+  bool get hasPendingChanges => (_$hasPendingChangesComputed ??= Computed<bool>(
+          () => super.hasPendingChanges,
+          name: 'EventFormStoreBase.hasPendingChanges'))
+      .value;
 
   late final _$titleAtom =
       Atom(name: 'EventFormStoreBase.title', context: context);
@@ -95,6 +116,22 @@ mixin _$EventFormStore on EventFormStoreBase, Store {
     });
   }
 
+  late final _$linkAtom =
+      Atom(name: 'EventFormStoreBase.link', context: context);
+
+  @override
+  String get link {
+    _$linkAtom.reportRead();
+    return super.link;
+  }
+
+  @override
+  set link(String value) {
+    _$linkAtom.reportWrite(value, super.link, () {
+      super.link = value;
+    });
+  }
+
   late final _$selectedDateAtom =
       Atom(name: 'EventFormStoreBase.selectedDate', context: context);
 
@@ -156,6 +193,88 @@ mixin _$EventFormStore on EventFormStoreBase, Store {
   set editingEvent(Event? value) {
     _$editingEventAtom.reportWrite(value, super.editingEvent, () {
       super.editingEvent = value;
+    });
+  }
+
+  late final _$isFeaturedAtom =
+      Atom(name: 'EventFormStoreBase.isFeatured', context: context);
+
+  @override
+  bool get isFeatured {
+    _$isFeaturedAtom.reportRead();
+    return super.isFeatured;
+  }
+
+  @override
+  set isFeatured(bool value) {
+    _$isFeaturedAtom.reportWrite(value, super.isFeatured, () {
+      super.isFeatured = value;
+    });
+  }
+
+  late final _$bannerCarouselAtom =
+      Atom(name: 'EventFormStoreBase.bannerCarousel', context: context);
+
+  @override
+  ImageUpload? get bannerCarousel {
+    _$bannerCarouselAtom.reportRead();
+    return super.bannerCarousel;
+  }
+
+  @override
+  set bannerCarousel(ImageUpload? value) {
+    _$bannerCarouselAtom.reportWrite(value, super.bannerCarousel, () {
+      super.bannerCarousel = value;
+    });
+  }
+
+  late final _$bannerLargeAtom =
+      Atom(name: 'EventFormStoreBase.bannerLarge', context: context);
+
+  @override
+  ImageUpload? get bannerLarge {
+    _$bannerLargeAtom.reportRead();
+    return super.bannerLarge;
+  }
+
+  @override
+  set bannerLarge(ImageUpload? value) {
+    _$bannerLargeAtom.reportWrite(value, super.bannerLarge, () {
+      super.bannerLarge = value;
+    });
+  }
+
+  late final _$existingBannerCarouselUrlAtom = Atom(
+      name: 'EventFormStoreBase.existingBannerCarouselUrl', context: context);
+
+  @override
+  String? get existingBannerCarouselUrl {
+    _$existingBannerCarouselUrlAtom.reportRead();
+    return super.existingBannerCarouselUrl;
+  }
+
+  @override
+  set existingBannerCarouselUrl(String? value) {
+    _$existingBannerCarouselUrlAtom
+        .reportWrite(value, super.existingBannerCarouselUrl, () {
+      super.existingBannerCarouselUrl = value;
+    });
+  }
+
+  late final _$existingBannerLargeUrlAtom =
+      Atom(name: 'EventFormStoreBase.existingBannerLargeUrl', context: context);
+
+  @override
+  String? get existingBannerLargeUrl {
+    _$existingBannerLargeUrlAtom.reportRead();
+    return super.existingBannerLargeUrl;
+  }
+
+  @override
+  set existingBannerLargeUrl(String? value) {
+    _$existingBannerLargeUrlAtom
+        .reportWrite(value, super.existingBannerLargeUrl, () {
+      super.existingBannerLargeUrl = value;
     });
   }
 
@@ -240,6 +359,72 @@ mixin _$EventFormStore on EventFormStoreBase, Store {
   }
 
   @override
+  void setLink(String value) {
+    final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
+        name: 'EventFormStoreBase.setLink');
+    try {
+      return super.setLink(value);
+    } finally {
+      _$EventFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setIsFeatured(bool value) {
+    final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
+        name: 'EventFormStoreBase.setIsFeatured');
+    try {
+      return super.setIsFeatured(value);
+    } finally {
+      _$EventFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setBannerCarousel(ImageUpload? image) {
+    final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
+        name: 'EventFormStoreBase.setBannerCarousel');
+    try {
+      return super.setBannerCarousel(image);
+    } finally {
+      _$EventFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setBannerLarge(ImageUpload? image) {
+    final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
+        name: 'EventFormStoreBase.setBannerLarge');
+    try {
+      return super.setBannerLarge(image);
+    } finally {
+      _$EventFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void removeBannerCarousel() {
+    final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
+        name: 'EventFormStoreBase.removeBannerCarousel');
+    try {
+      return super.removeBannerCarousel();
+    } finally {
+      _$EventFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void removeBannerLarge() {
+    final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
+        name: 'EventFormStoreBase.removeBannerLarge');
+    try {
+      return super.removeBannerLarge();
+    } finally {
+      _$EventFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   void _clearError() {
     final _$actionInfo = _$EventFormStoreBaseActionController.startAction(
         name: 'EventFormStoreBase._clearError');
@@ -290,13 +475,22 @@ title: ${title},
 description: ${description},
 eventTime: ${eventTime},
 location: ${location},
+link: ${link},
 selectedDate: ${selectedDate},
 isLoading: ${isLoading},
 errorMessage: ${errorMessage},
 editingEvent: ${editingEvent},
+isFeatured: ${isFeatured},
+bannerCarousel: ${bannerCarousel},
+bannerLarge: ${bannerLarge},
+existingBannerCarouselUrl: ${existingBannerCarouselUrl},
+existingBannerLargeUrl: ${existingBannerLargeUrl},
 isEditing: ${isEditing},
 isFormValid: ${isFormValid},
-hasError: ${hasError}
+hasError: ${hasError},
+hasBannerCarousel: ${hasBannerCarousel},
+hasBannerLarge: ${hasBannerLarge},
+hasPendingChanges: ${hasPendingChanges}
     ''';
   }
 }

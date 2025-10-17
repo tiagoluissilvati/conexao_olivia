@@ -120,6 +120,16 @@ mixin _$AuthStore on _AuthStoreBase, Store {
     return _$checkAuthStateAsyncAction.run(() => super.checkAuthState());
   }
 
+  late final _$changePasswordAsyncAction =
+      AsyncAction('_AuthStoreBase.changePassword', context: context);
+
+  @override
+  Future<bool> changePassword(
+      {required String currentPassword, required String newPassword}) {
+    return _$changePasswordAsyncAction.run(() => super.changePassword(
+        currentPassword: currentPassword, newPassword: newPassword));
+  }
+
   late final _$_AuthStoreBaseActionController =
       ActionController(name: '_AuthStoreBase', context: context);
 

@@ -1,7 +1,7 @@
 // stores/event_store.dart
 import 'package:conexaoolivia/core/repositories/event_repository.dart';
 import 'package:conexaoolivia/modules/eventos/models/event_model.dart';
-
+import 'package:conexaoolivia/modules/galeria-eventos/models/image_upload_model.dart';
 import 'package:mobx/mobx.dart';
 
 part 'event_store.g.dart';
@@ -28,11 +28,23 @@ abstract class EventStoreBase with Store {
   @observable
   Event? selectedEvent;
 
+  @observable
+  bool isUploadingBanners = false;
+
   @computed
   bool get hasEvents => events.isNotEmpty;
 
   @computed
   bool get hasError => errorMessage != null;
+
+  @computed
+  Event? get featuredEvent {
+    try {
+      return events.firstWhere((event) => event.isFeatured);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @action
   Future<void> loadEvents() async {
@@ -78,13 +90,35 @@ abstract class EventStoreBase with Store {
   }
 
   @action
-  Future<bool> createEvent(Event event) async {
+  Future<bool> createEvent(
+      Event event, {
+        ImageUpload? bannerCarousel,
+        ImageUpload? bannerLarge,
+      }) async {
     isLoading = true;
     errorMessage = null;
 
     try {
+      // Se marcado como destaque, desmarcar outros
+      if (event.isFeatured) {
+        await _repository.clearFeaturedEvents();
+      }
+
       final newEvent = await _repository.createEvent(event);
-      events.add(newEvent);
+
+      // Upload dos banners se existirem
+      Event finalEvent = newEvent;
+      if (bannerCarousel != null || bannerLarge != null) {
+        isUploadingBanners = true;
+        finalEvent = await _repository.uploadEventBanners(
+          newEvent.id,
+          bannerCarousel: bannerCarousel,
+          bannerLarge: bannerLarge,
+        );
+        isUploadingBanners = false;
+      }
+
+      events.add(finalEvent);
       _sortEvents();
       return true;
     } catch (e) {
@@ -92,16 +126,38 @@ abstract class EventStoreBase with Store {
       return false;
     } finally {
       isLoading = false;
+      isUploadingBanners = false;
     }
   }
 
   @action
-  Future<bool> updateEvent(Event event) async {
+  Future<bool> updateEvent(
+      Event event, {
+        ImageUpload? bannerCarousel,
+        ImageUpload? bannerLarge,
+      }) async {
     isLoading = true;
     errorMessage = null;
 
     try {
-      final updatedEvent = await _repository.updateEvent(event);
+      // Se marcado como destaque, desmarcar outros
+      if (event.isFeatured) {
+        await _repository.clearFeaturedEvents(exceptId: event.id);
+      }
+
+      var updatedEvent = await _repository.updateEvent(event);
+
+      // Upload dos novos banners se existirem
+      if (bannerCarousel != null || bannerLarge != null) {
+        isUploadingBanners = true;
+        updatedEvent = await _repository.uploadEventBanners(
+          updatedEvent.id,
+          bannerCarousel: bannerCarousel,
+          bannerLarge: bannerLarge,
+        );
+        isUploadingBanners = false;
+      }
+
       final index = events.indexWhere((e) => e.id == event.id);
       if (index != -1) {
         events[index] = updatedEvent;
@@ -114,6 +170,7 @@ abstract class EventStoreBase with Store {
       return false;
     } finally {
       isLoading = false;
+      isUploadingBanners = false;
     }
   }
 
@@ -138,6 +195,35 @@ abstract class EventStoreBase with Store {
   }
 
   @action
+  Future<bool> deleteBanner(String eventId, BannerType bannerType) async {
+    errorMessage = null;
+
+    try {
+      await _repository.deleteBanner(eventId, bannerType);
+
+      // Atualizar localmente
+      final index = events.indexWhere((e) => e.id == eventId);
+      if (index != -1) {
+        final event = events[index];
+        events[index] = bannerType == BannerType.carousel
+            ? event.copyWith(bannerCarouselUrl: '')
+            : event.copyWith(bannerLargeUrl: '');
+      }
+
+      if (selectedEvent?.id == eventId) {
+        selectedEvent = bannerType == BannerType.carousel
+            ? selectedEvent!.copyWith(bannerCarouselUrl: '')
+            : selectedEvent!.copyWith(bannerLargeUrl: '');
+      }
+
+      return true;
+    } catch (e) {
+      errorMessage = e.toString();
+      return false;
+    }
+  }
+
+  @action
   void clearError() {
     errorMessage = null;
   }
@@ -155,3 +241,5 @@ abstract class EventStoreBase with Store {
     // Cleanup se necessário
   }
 }
+
+enum BannerType { carousel, large }

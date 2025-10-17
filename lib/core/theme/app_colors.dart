@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Cores primárias baseadas no logo
-  static const Color primary = Color(0xFF5D4065); // Roxo principal do logo
-  static const Color primaryLight = Color(0xFF8B6BAA);
-  static const Color primaryDark = Color(0xFF4A356A);
+  // Cores primárias
+  static const Color primary = Color(0xFF55385a);
+  static const Color primaryLight = Color(0xFF7A5B7F);
+  static const Color primaryDark = Color(0xFF3F2742);
 
   // Cores secundárias
-  static const Color secondary = Color(0xFFB19CD9);
-  static const Color secondaryLight = Color(0xFFD1C4E9);
-  static const Color secondaryDark = Color(0xFF9575CD);
-
+  static const Color secondary = Color(0xFFccbbda);
+  static const Color secondaryLight = Color(0xFFE0D2E9);
+  static const Color secondaryDark = Color(0xFFA699B3);
   // Cores neutras
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);

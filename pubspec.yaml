@@ -1,8 +1,8 @@
 name: conexaoolivia
-description: "Super App Conexão Olivia"
+description: "Super App Olivia Conexão"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.2+7
 
 environment:
   sdk: '>=3.4.4 <4.0.0'
@@ -29,14 +29,26 @@ dependencies:
   flutter_svg: ^2.0.9
 
   # Utils
-  email_validator: ^2.1.17
+  email_validator: ^3.0.0
   shared_preferences: ^2.2.2
   brasil_fields: ^1.15.0
   cpf_cnpj_validator: ^2.0.0
   url_launcher: ^6.2.1
-  package_info_plus: ^8.0.0
-  new_version_plus: ^0.0.10
-  # intl não precisa ser declarado explicitamente
+  package_info_plus: ^9.0.0
+
+  flutter_staggered_grid_view: ^0.7.0
+
+  # Para visualização de fotos em tela cheia
+  photo_view: ^0.15.0
+
+  # Para seleção de imagens
+  image_picker: ^1.0.4
+
+  # Para detecção de tipo MIME
+  mime: ^2.0.0
+
+  # Para manipulação de caminhos
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:
@@ -47,7 +59,7 @@ dev_dependencies:
   mobx_codegen: ^2.4.0
   flutter_launcher_icons: "^0.14.4"
 
-  flutter_lints: ^3.0.1
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

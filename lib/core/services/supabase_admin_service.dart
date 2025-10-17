@@ -64,11 +64,10 @@ class SupabaseAdminService {
       final userId = exactUser['id'];
       print('✅ Usuário encontrado - ID: $userId');
 
-      // 2. Buscar CPF do usuário - MÉTODO HTTP DIRETO
+      // 2. Buscar CPF do usuário
       print('🔍 Buscando CPF do usuário via HTTP...');
-      String newPassword = "123";
+      String newPassword = "123456";
       try {
-        // ALTERNATIVA 1: HTTP REST direto
         final profileResponse = await http.get(
           Uri.parse("$supabaseUrl/rest/v1/profiles?id=eq.$userId&select=cpf"),
           headers: {
@@ -80,7 +79,6 @@ class SupabaseAdminService {
 
         print('📡 Status busca profile: ${profileResponse.statusCode}');
         print('📄 Body busca profile: ${profileResponse.body}');
-
 
         if (profileResponse.statusCode != 200) {
           print('❌ Erro na busca do profile: ${profileResponse.body}');
@@ -111,25 +109,25 @@ class SupabaseAdminService {
           final cpf = emailData.first['cpf'].toString().replaceAll(RegExp(r'[^0-9]'), '');
           print('✅ CPF encontrado por email: $cpf');
 
-          if (cpf.length < 5) {
-            throw Exception("CPF inválido - deve ter pelo menos 5 dígitos");
+          if (cpf.length < 6) {
+            throw Exception("CPF inválido - deve ter pelo menos 6 dígitos");
           }
 
-          newPassword = cpf.substring(0, 5);
+          newPassword = cpf.substring(0, 6);
           print('🔑 Nova senha será: $newPassword');
         } else {
           // Busca por ID funcionou
-          final profileData = jsonDecode(profileResponse.body) ;
+          final profileData = jsonDecode(profileResponse.body) as List;
 
           if (profileData.isEmpty || profileData.first['cpf'] == null) {
             throw Exception("CPF não encontrado no profile");
           }
 
-          final cpf =  profileData.toString().replaceAll(RegExp(r'[^0-9]'), '');
+          final cpf = profileData.first['cpf'].toString().replaceAll(RegExp(r'[^0-9]'), '');
           print('✅ CPF encontrado por ID: $cpf');
 
-          if (cpf.length < 5) {
-            throw Exception("CPF inválido - deve ter pelo menos 5 dígitos");
+          if (cpf.length < 6) {
+            throw Exception("CPF inválido - deve ter pelo menos 6 dígitos");
           }
 
           newPassword = cpf.substring(0, 6);
@@ -137,7 +135,7 @@ class SupabaseAdminService {
         }
 
         // 3. Atualizar senha do usuário
-        print('🔧 Atualizando senha para os 5 primeiros dígitos do CPF...');
+        print('🔧 Atualizando senha para os 6 primeiros dígitos do CPF...');
         final responseUpdate = await http.put(
           Uri.parse("$supabaseUrl/auth/v1/admin/users/$userId"),
           headers: {
@@ -152,15 +150,41 @@ class SupabaseAdminService {
 
         print('📡 Status da atualização: ${responseUpdate.statusCode}');
 
-        if (responseUpdate.statusCode == 200) {
-          print('✅ === SENHA ATUALIZADA COM SUCESSO ===');
-          print('   Email: $email');
-          print('   Nova senha: $newPassword');
-          return true;
-        } else {
+        if (responseUpdate.statusCode != 200) {
           print('❌ Erro ao atualizar senha: ${responseUpdate.body}');
           throw Exception("Erro ao atualizar senha: ${responseUpdate.body}");
         }
+
+        // 4. NOVO: Marcar flag de troca obrigatória no perfil
+        print('🔧 Marcando flag de troca obrigatória no perfil...');
+        final responseFlagUpdate = await http.patch(
+          Uri.parse("$supabaseUrl/rest/v1/profiles?id=eq.$userId"),
+          headers: {
+            "Authorization": "Bearer $serviceRoleKey",
+            "apikey": serviceRoleKey,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal",
+          },
+          body: jsonEncode({
+            "needs_password_change": true,
+            "updated_at": DateTime.now().toIso8601String(),
+          }),
+        );
+
+        print('📡 Status atualização flag: ${responseFlagUpdate.statusCode}');
+
+        if (responseFlagUpdate.statusCode == 204 || responseFlagUpdate.statusCode == 200) {
+          print('✅ Flag de troca obrigatória marcada');
+        } else {
+          print('⚠️ Aviso: Não foi possível marcar flag (${responseFlagUpdate.statusCode})');
+          // Não falha o processo por causa disso
+        }
+
+        print('✅ === SENHA ATUALIZADA COM SUCESSO ===');
+        print('   Email: $email');
+        print('   Nova senha: $newPassword');
+        print('   Flag needs_password_change: true');
+        return true;
 
       } catch (e) {
         print('❌ Erro ao buscar CPF: $e');
