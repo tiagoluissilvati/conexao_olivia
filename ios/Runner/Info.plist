@@ -5,7 +5,7 @@
    <key>CFBundleDevelopmentRegion</key>
    <string>$(DEVELOPMENT_LANGUAGE)</string>
    <key>CFBundleDisplayName</key>
-   <string>Conexaoolivias</string>
+   <string>Olivia Conexão</string>
    <key>CFBundleExecutable</key>
    <string>$(EXECUTABLE_NAME)</string>
    <key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
    <key>CFBundleInfoDictionaryVersion</key>
    <string>6.0</string>
    <key>CFBundleName</key>
-   <string>Olivia Conexão </string>
+   <string>Olivia Conexão</string>
    <key>CFBundlePackageType</key>
    <string>APPL</string>
    <key>CFBundleShortVersionString</key>
@@ -55,6 +55,20 @@
       <string>sms</string>
       <string>mailto</string>
    </array>
+
+   <!-- PERMISSÕES PARA GALERIA DE FOTOS -->
+   <key>NSPhotoLibraryUsageDescription</key>
+   <string>Precisamos acessar sua galeria para você fazer upload de fotos</string>
+
+   <!-- Para iOS 14+ (Acesso limitado à galeria) -->
+   <key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
+   <true/>
+
+   <key>NSPhotoLibraryUsageDescription</key>
+   <string>Precisamos acessar suas imagens para que você possa selecionar fotos no app.</string>
+
+   <key>NSCameraUsageDescription</key>
+   <string>Precisamos acessar a câmera para que você possa tirar fotos dentro do app.</string>
 
 </dict>
 </plist>

@@ -137,7 +137,7 @@ class _PartnerDetailPageState extends State<PartnerDetailPage> {
             ),
             const SizedBox(height: 20),
             // Status badge
-            Container(
+            partnerStore.isAdmin ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: partner.isActive
@@ -154,7 +154,7 @@ class _PartnerDetailPageState extends State<PartnerDetailPage> {
                   letterSpacing: 0.5,
                 ) ,
               ) : const Text(""),
-            ),
+            ) : SizedBox(),
           ],
         ),
       ),

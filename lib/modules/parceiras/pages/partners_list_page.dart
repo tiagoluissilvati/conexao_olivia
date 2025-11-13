@@ -223,30 +223,7 @@ class _PartnersListPageState extends State<PartnersListPage> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: partner.isActive
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: store.isAdmin ? Text(
-                            partner.isActive ? 'Ativa' : 'Inativa',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: partner.isActive ? Colors.green : Colors
-                                  .red,
-                            ),
-                          ) : const Text(""),
-                        ),
-                      ],
-                    ),
+                    const SizedBox(height: 8) ,
                   ],
                 ),
               ),

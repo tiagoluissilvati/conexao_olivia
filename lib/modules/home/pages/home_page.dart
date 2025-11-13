@@ -505,7 +505,8 @@ class _HomePageState extends State<HomePage> {
       child: Hero(
         tag: 'carousel_${event.id}',
         child: Container(
-          width: 280,
+          width: double.infinity, // ocupa toda a largura disponível
+          margin: const EdgeInsets.symmetric(horizontal: 8), // espaçamento entre itens do carousel
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -523,7 +524,7 @@ class _HomePageState extends State<HomePage> {
                 child: imageUrl.isNotEmpty
                     ? Image.network(
                   imageUrl,
-                  width: 280,
+                  width: double.infinity, // largura total
                   height: 160,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
@@ -580,7 +581,8 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(height: 4),
                       Text(
                         '${event.eventDate.day}/${event.eventDate.month}',
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        style:
+                        const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),

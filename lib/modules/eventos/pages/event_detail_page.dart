@@ -334,6 +334,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   String eventUrl = event.linkCheckout!;
+
+                  // Garante que tenha http ou https
+                  if (!eventUrl.startsWith('http')) {
+                    eventUrl = 'https://$eventUrl';
+                  }
+
                   final success = await UrlLauncherService.openUrl(eventUrl);
 
                   if (!success) {
@@ -354,7 +360,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-              ),
+              )
+              ,
             )
           ]
         ],
