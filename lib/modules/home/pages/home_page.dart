@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:conexaoolivia/modules/profiles/pages/profile_form_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -7,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../auth/stores/auth_store.dart';
 import '../../eventos/pages/event_store.dart';
 import '../../eventos/models/event_model.dart';
+import '../../profiles/pages/profile_store.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final EventStore eventStore;
+  late final ProfileStore profileStore;
   final PageController _carouselController = PageController();
   Timer? _autoScrollTimer;
   int _currentPage = 0;
@@ -25,7 +28,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     eventStore = Modular.get<EventStore>();
+    profileStore = Modular.get<ProfileStore>();
     eventStore.loadEvents();
+    profileStore.loadProfiles();
     _startAutoScroll();
   }
 
@@ -75,11 +80,29 @@ class _HomePageState extends State<HomePage> {
               color: AppColors.primary,
             ),
             onSelected: (value) {
-              if (value == 'logout') {
+              if (value == 'profile') {
+                _handleProfileNavigation();
+              } else if (value == 'logout') {
                 _showLogoutDialog(context, authStore);
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Observer(
+                  builder: (_) => ListTile(
+                    leading: Icon(
+                      profileStore.isAdmin ? Icons.people : Icons.person,
+                      color: AppColors.primary,
+                    ),
+                    title: Text(
+                      profileStore.isAdmin ? 'Usuários' : 'Perfil',
+                      style: const TextStyle(color: AppColors.primary),
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
               const PopupMenuItem(
                 value: 'logout',
                 child: ListTile(
@@ -103,7 +126,6 @@ class _HomePageState extends State<HomePage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-
                     // Logo e Welcome Card
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -190,7 +212,6 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-
 
                     // NOVO: Banner do Evento em Destaque
                     Observer(
@@ -288,6 +309,26 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  // Navegação para Perfil ou Lista de Usuários
+  void _handleProfileNavigation() async {
+    if (profileStore.isAdmin) {
+      // Admin vai para lista de usuários
+      Modular.to.pushNamed('/profiles/');
+    } else {
+      // Usuário comum vai para edição do próprio perfil
+      if (profileStore.currentUserProfile != null) {
+        final formStore = Modular.get<ProfileFormStore>();
+        formStore.initializeWithProfile(
+          profileStore.currentUserProfile!,
+          false, // não é admin
+        );
+        await Modular.to.pushNamed('/profiles/form');
+        // Recarregar perfil após edição
+        await profileStore.loadProfiles();
+      }
+    }
   }
 
   // NOVO: Widget do Banner em Destaque
@@ -505,8 +546,8 @@ class _HomePageState extends State<HomePage> {
       child: Hero(
         tag: 'carousel_${event.id}',
         child: Container(
-          width: double.infinity, // ocupa toda a largura disponível
-          margin: const EdgeInsets.symmetric(horizontal: 8), // espaçamento entre itens do carousel
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -524,7 +565,7 @@ class _HomePageState extends State<HomePage> {
                 child: imageUrl.isNotEmpty
                     ? Image.network(
                   imageUrl,
-                  width: double.infinity, // largura total
+                  width: double.infinity,
                   height: 160,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
@@ -544,7 +585,6 @@ class _HomePageState extends State<HomePage> {
                 )
                     : _buildCarouselPlaceholder(event),
               ),
-              // Overlay com título
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -626,7 +666,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Obter próximos eventos (excluindo o em destaque)
   List<Event> _getUpcomingEvents() {
     final now = DateTime.now();
     final allEvents = eventStore.events
@@ -634,18 +673,15 @@ class _HomePageState extends State<HomePage> {
         e.eventDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)))
         .toList();
 
-    // Remover evento em destaque
     final featuredEvent = eventStore.featuredEvent;
     if (featuredEvent != null) {
       allEvents.removeWhere((e) => e.id == featuredEvent.id);
     }
 
-    // Ordenar por data e pegar os próximos 4
     allEvents.sort((a, b) => a.eventDate.compareTo(b.eventDate));
     return allEvents.take(4).toList();
   }
 
-  // Visualizador de imagem com zoom
   void _openImageViewer(BuildContext context, String imageUrl, String title) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -708,16 +744,15 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.primary, // Fundo principal
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // 🔹 Imagem central reduzida
               Center(
                 child: FractionallySizedBox(
-                  widthFactor: 0.6, // controla tamanho da imagem
+                  widthFactor: 0.6,
                   heightFactor: 0.6,
                   child: Image.asset(
                     backgroundImage,
@@ -726,15 +761,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-
-              // 🔹 Título na parte superior
               Padding(
                 padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Stack(
                     children: [
-                      // Contorno do texto
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -745,7 +777,6 @@ class _HomePageState extends State<HomePage> {
                             ..color = Colors.black,
                         ),
                       ),
-                      // Texto preenchido
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -757,8 +788,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-
-              // 🔹 Subtítulo na parte inferior, um pouco mais abaixo
               Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
                 child: Align(
@@ -784,7 +813,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   void _showLogoutDialog(BuildContext context, AuthStore authStore) {
     showDialog(

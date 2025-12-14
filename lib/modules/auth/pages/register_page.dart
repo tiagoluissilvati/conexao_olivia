@@ -140,11 +140,17 @@ class _RegisterPageState extends State<RegisterPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.check_circle, color: AppColors.success),
-            SizedBox(width: 8),
-            Text('Cadastro realizado!'),
+            const Icon(Icons.check_circle, color: AppColors.success),
+            const SizedBox(width: 8),
+            // ✅ CORREÇÃO: Usar Expanded para evitar overflow
+            Expanded(
+              child: Text(
+                'Cadastro realizado!',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
           ],
         ),
         content: const Text(
