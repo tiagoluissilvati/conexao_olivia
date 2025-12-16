@@ -25,10 +25,11 @@
    <key>LSRequiresIPhoneOS</key>
    <true/>
 
-   <!-- CONFIGURAÇÃO APENAS PARA IPHONE -->
+   <!-- SUPORTE PARA IPHONE E IPAD -->
    <key>UIDeviceFamily</key>
    <array>
-      <integer>1</integer>
+      <integer>1</integer> <!-- iPhone -->
+      <integer>2</integer> <!-- iPad -->
    </array>
 
    <key>UILaunchStoryboardName</key>
@@ -41,12 +42,20 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
    </array>
+
+   <key>UISupportedInterfaceOrientations~ipad</key>
+   <array>
+      <string>UIInterfaceOrientationPortrait</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
+      <string>UIInterfaceOrientationLandscapeLeft</string>
+      <string>UIInterfaceOrientationLandscapeRight</string>
+   </array>
+
    <key>CADisableMinimumFrameDurationOnPhone</key>
    <true/>
    <key>UIApplicationSupportsIndirectInputEvents</key>
    <true/>
 
-   <!-- Configuração para URL Launcher -->
    <key>LSApplicationQueriesSchemes</key>
    <array>
       <string>https</string>
@@ -56,11 +65,17 @@
       <string>mailto</string>
    </array>
 
+   <!-- ⭐ PERMISSÃO DE CÂMERA - TEXTO ESPECÍFICO E CLARO -->
+   <key>NSCameraUsageDescription</key>
+   <string>A câmera é usada para você capturar fotos dos eventos e adicioná-las à galeria</string>
+
    <!-- PERMISSÕES PARA GALERIA DE FOTOS -->
    <key>NSPhotoLibraryUsageDescription</key>
-   <string>Precisamos acessar sua galeria para você fazer upload de fotos</string>
+   <string>Precisamos acessar sua galeria para você selecionar fotos dos eventos</string>
 
-   <!-- Para iOS 14+ (Acesso limitado à galeria) -->
+   <key>NSPhotoLibraryAddUsageDescription</key>
+   <string>Precisamos salvar fotos na sua galeria quando necessário</string>
+
    <key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
    <true/>
  
