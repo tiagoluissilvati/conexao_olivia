@@ -1,5 +1,6 @@
 import 'package:conexaoolivia/core/repositories/event_repository.dart';
 import 'package:conexaoolivia/core/repositories/profile_repository.dart';
+import 'package:conexaoolivia/modules/auth/pages/version_check_page.dart';
 import 'package:conexaoolivia/modules/auth/stores/auth_store.dart';
 import 'package:conexaoolivia/modules/eventos/events_module.dart';
 import 'package:conexaoolivia/modules/eventos/pages/event_store.dart';
@@ -32,6 +33,7 @@ class AppModule extends Module {
   @override
   void routes(RouteManager r) {
     r.child('/', child: (context) => const SplashPage());
+    r.child('/check-version', child: (context) => const VersionCheckPage());
     r.module('/auth', module: AuthModule());
     r.module('/home', module: HomeModule());
     r.module('/events', module: EventsModule());

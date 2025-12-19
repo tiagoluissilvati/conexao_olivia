@@ -47,7 +47,6 @@ abstract class GalleryStoreBase with Store {
     errorMessage = null;
 
     try {
-      await _checkAdminStatus();
       final events = await _repository.getAllGalleryEvents();
 
       galleryEvents.clear();
@@ -60,12 +59,13 @@ abstract class GalleryStoreBase with Store {
   }
 
   @action
-  Future<void> _checkAdminStatus() async {
+  Future<void> checkAdminStatus() async {
     try {
       isAdmin = await _repository.isUserAdmin();
     } catch (e) {
       isAdmin = false;
     }
+    print("IS ADMIN $isAdmin");
   }
 
   @action

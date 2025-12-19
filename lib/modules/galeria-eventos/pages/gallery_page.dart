@@ -19,8 +19,15 @@ class _GalleryPageState extends State<GalleryPage> {
   @override
   void initState() {
     super.initState();
+
     store = Modular.get<GalleryStore>();
-    store.loadGalleryEvents();
+    _initializeData();
+  }
+
+
+  Future<void> _initializeData() async {
+    await store.checkAdminStatus(); // Chama primeiro
+    store.loadGalleryEvents();       // Depois carrega os eventos
   }
 
   @override

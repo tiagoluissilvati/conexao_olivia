@@ -103,7 +103,7 @@ class UpdateRequiredDialog extends StatelessWidget {
                   CustomButton(
                     text: 'Atualizar Agora',
                     onPressed: () async {
-                      await VersionCheckService.openStore();
+                      await VersionCheckService.openStore(context);
 
                       // Se não for obrigatório, permitir fechar
                       if (!isForceUpdate && context.mounted) {

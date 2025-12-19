@@ -75,7 +75,7 @@ class _SplashPageState extends State<SplashPage>
     // Aguardar fade out
     await Future.delayed(const Duration(milliseconds: 500));
 
-    Modular.to.pushReplacementNamed('/auth/');
+    Modular.to.pushReplacementNamed('/check-version');
 
   }
 

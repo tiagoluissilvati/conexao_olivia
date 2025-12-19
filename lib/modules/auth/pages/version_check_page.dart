@@ -60,17 +60,12 @@ class _VersionCheckPageState extends State<VersionCheckPage> {
       }
 
       // App está atualizado ou usuário optou por continuar
-      print('✅ Prosseguindo para tela de login');
       if (mounted) {
 
         // Navegar para tela apropriada
         if (mounted) {
-          Modular.to.pushReplacementNamed('/auth/login');
-          if (_authStore.isAuthenticated) {
-            Modular.to.pushReplacementNamed('/home');
-          } else {
-            Modular.to.pushReplacementNamed('/auth/login');
-          }
+
+          Modular.to.pushReplacementNamed('/home');
         }
       }
 

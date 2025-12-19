@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/supabase_service.dart';
@@ -118,7 +119,7 @@ class VersionCheckService {
   }
 
   /// Abre a loja de apps para atualização
-  static Future<void> openStore() async {
+  static Future<void> openStore(BuildContext context) async {
     try {
       print('🛒 Tentando abrir loja...');
 
@@ -141,7 +142,6 @@ class VersionCheckService {
       if (storeUrl != null && storeUrl.isNotEmpty) {
         print('📱 Abrindo URL: $storeUrl');
 
-        // Importar: import 'package:url_launcher/url_launcher.dart';
         final uri = Uri.parse(storeUrl);
         if (await canLaunchUrl(uri)) {
           await launchUrl(
@@ -151,14 +151,84 @@ class VersionCheckService {
           print('✅ Loja aberta com sucesso');
         } else {
           print('❌ Não foi possível abrir a loja');
+          _showManualUpdateDialog(context);
         }
       } else {
-        print('⚠️ URL da loja não configurada ainda');
-        print('ℹ️ Configure as URLs no banco de dados quando o app for publicado');
+        // URL não configurada - mostrar diálogo informativo
+        print('⚠️ URL da loja não configurada');
+        _showManualUpdateDialog(context);
       }
 
     } catch (e) {
       print('❌ Erro ao abrir loja: $e');
+      // Em caso de erro, também mostrar diálogo manual
+      _showManualUpdateDialog(context);
     }
+  }
+
+  /// Diálogo para orientar atualização manual
+  static void _showManualUpdateDialog(BuildContext context) {
+    final storeName = Platform.isAndroid ? 'Google Play Store' : 'App Store';
+    final storeIcon = Platform.isAndroid ? '🤖' : '🍎';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                storeIcon,
+                style: const TextStyle(fontSize: 48),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Atualização Necessária',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Por favor, atualize o aplicativo manualmente através da $storeName.',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Busque por "Conexão Olivia" na $storeName e instale a versão mais recente.',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.black54,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Entendi'),
+          ),
+        ],
+      ),
+    );
   }
 }

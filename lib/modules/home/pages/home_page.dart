@@ -20,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final EventStore eventStore;
   late final ProfileStore profileStore;
+  late final AuthStore authStore;
   final PageController _carouselController = PageController();
   Timer? _autoScrollTimer;
   int _currentPage = 0;
@@ -29,6 +30,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     eventStore = Modular.get<EventStore>();
     profileStore = Modular.get<ProfileStore>();
+    authStore = Modular.get<AuthStore>();
     eventStore.loadEvents();
     profileStore.loadProfiles();
     _startAutoScroll();
@@ -58,10 +60,90 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Método para verificar autenticação antes de navegar
+  void _navigateWithAuth(String route) {
+    if (authStore.currentUser == null) {
+      _showAuthRequiredDialog();
+    } else {
+      Modular.to.pushNamed(route);
+    }
+  }
+
+  // Diálogo de conteúdo exclusivo
+  void _showAuthRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_outline,
+                size: 48,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              '🔒 Conteúdo Exclusivo',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Para acessar eventos e galerias interativas, é necessário criar uma conta.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Agora não',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Modular.to.pushReplacementNamed('/auth/login');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text('Entrar ou Criar Conta'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final authStore = Modular.get<AuthStore>();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
@@ -184,7 +266,7 @@ class _HomePageState extends State<HomePage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Bem-vinda,',
+                                        'Bem-vinda ',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyLarge
@@ -193,6 +275,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       const SizedBox(height: 4),
+                                      authStore.currentUser != null ?
                                       Text(
                                         authStore.currentUser?.name ?? 'Usuário',
                                         style: Theme.of(context)
@@ -202,7 +285,7 @@ class _HomePageState extends State<HomePage> {
                                           color: AppColors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
-                                      ),
+                                      ) : const SizedBox(),
                                     ],
                                   ),
                                 ),
@@ -265,9 +348,7 @@ class _HomePageState extends State<HomePage> {
                             backgroundImage: 'assets/images/calendario.png',
                             title: 'Eventos',
                             subtitle: 'Próximos eventos',
-                            onTap: () {
-                              Modular.to.pushNamed('/events/');
-                            },
+                            onTap: () => _navigateWithAuth('/events/'),
                           ),
                           _buildActionCard(
                             context,
@@ -283,9 +364,7 @@ class _HomePageState extends State<HomePage> {
                             backgroundImage: 'assets/images/galeria.png',
                             title: 'Galeria',
                             subtitle: 'Registros de nossos encontros',
-                            onTap: () {
-                              Modular.to.pushNamed('/gallery');
-                            },
+                            onTap: () => _navigateWithAuth('/gallery'),
                           ),
                           _buildActionCard(
                             context,
@@ -501,7 +580,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               TextButton(
-                onPressed: () => Modular.to.pushNamed('/events/'),
+                onPressed: () => _navigateWithAuth('/events/'),
                 child: const Text('Ver todos'),
               ),
             ],
@@ -832,7 +911,6 @@ class _HomePageState extends State<HomePage> {
             onPressed: () async {
               Navigator.of(context).pop();
               await authStore.signOut();
-              Modular.to.pushReplacementNamed('/auth/login');
             },
             style: TextButton.styleFrom(
               foregroundColor: AppColors.error,

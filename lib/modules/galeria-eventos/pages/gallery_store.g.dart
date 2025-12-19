@@ -144,12 +144,12 @@ mixin _$GalleryStore on GalleryStoreBase, Store {
     return _$loadGalleryEventsAsyncAction.run(() => super.loadGalleryEvents());
   }
 
-  late final _$_checkAdminStatusAsyncAction =
-      AsyncAction('GalleryStoreBase._checkAdminStatus', context: context);
+  late final _$checkAdminStatusAsyncAction =
+      AsyncAction('GalleryStoreBase.checkAdminStatus', context: context);
 
   @override
-  Future<void> _checkAdminStatus() {
-    return _$_checkAdminStatusAsyncAction.run(() => super._checkAdminStatus());
+  Future<void> checkAdminStatus() {
+    return _$checkAdminStatusAsyncAction.run(() => super.checkAdminStatus());
   }
 
   late final _$loadGalleryEventByIdAsyncAction =

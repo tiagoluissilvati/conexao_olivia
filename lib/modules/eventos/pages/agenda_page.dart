@@ -41,10 +41,7 @@ class _AgendaPageState extends State<AgendaPage> {
         actions: [
           Observer(
             builder: (_) => store.isAdmin
-                ? IconButton(
-              icon: const Icon(Icons.add, color: Colors.white),
-              onPressed: () => _navigateToEventForm(),
-            )
+                ? Text(store.isAdmin.toString())
                 : const SizedBox.shrink(),
           ),
         ],
