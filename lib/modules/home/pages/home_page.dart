@@ -163,7 +163,13 @@ class _HomePageState extends State<HomePage> {
             ),
             onSelected: (value) {
               if (value == 'profile') {
-                _handleProfileNavigation();
+                 if (authStore.currentUser == null ) {
+
+                   Modular.to.pushReplacementNamed('/auth/login');
+                 } else {
+
+                   _handleProfileNavigation();
+                 }
               } else if (value == 'logout') {
                 _showLogoutDialog(context, authStore);
               }
@@ -177,7 +183,10 @@ class _HomePageState extends State<HomePage> {
                       profileStore.isAdmin ? Icons.people : Icons.person,
                       color: AppColors.primary,
                     ),
-                    title: Text(
+                    title: authStore.currentUser == null ? Text(
+                     'Login',
+                      style: const TextStyle(color: AppColors.primary),
+                    ) : Text(
                       profileStore.isAdmin ? 'Usuários' : 'Perfil',
                       style: const TextStyle(color: AppColors.primary),
                     ),
