@@ -379,7 +379,7 @@ class _HomePageState extends State<HomePage> {
                             context,
                             backgroundImage: 'assets/images/parceiras.png',
                             title: 'Parceiras',
-                            subtitle: 'Conheça as nossas parceiras de sucucesso',
+                            subtitle: 'Conheça as nossas parceiras de sucesso',
                             onTap: () {
                               Modular.to.pushNamed('/partners');
                             },
