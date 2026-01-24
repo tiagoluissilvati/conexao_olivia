@@ -41,8 +41,11 @@ class _AgendaPageState extends State<AgendaPage> {
         actions: [
           Observer(
             builder: (_) => store.isAdmin
-                ? Text(store.isAdmin.toString())
-                : const SizedBox.shrink(),
+                ? IconButton(
+              icon: const Icon(Icons.add, color: Colors.white),
+              onPressed: () => _navigateToEventForm(),
+            )
+                : const SizedBox.shrink()
           ),
         ],
       ),
@@ -113,8 +116,8 @@ class _AgendaPageState extends State<AgendaPage> {
                     ),
                   ),
                 ),
-                const Text(
-                  'de 2025:',
+                 Text(
+                  'de ${DateTime.now().year}' ,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

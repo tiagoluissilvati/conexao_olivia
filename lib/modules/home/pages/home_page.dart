@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/stores/auth_store.dart';
 import '../../eventos/pages/event_store.dart';
@@ -25,6 +26,10 @@ class _HomePageState extends State<HomePage> {
   Timer? _autoScrollTimer;
   int _currentPage = 0;
 
+  // URL do PDF do Google Drive
+  // Formato: https://drive.google.com/file/d/SEU_ID_AQUI/view
+  final String pdfUrl = 'https://drive.google.com/file/d/1697nbhpMO4EOxRgsfTqtChPr33Zt1-zX/view';
+                    //     https://drive.google.com/file/d/1697nbhpMO4EOxRgsfTqtChPr33Zt1-zX/view?usp=sharing
   @override
   void initState() {
     super.initState();
@@ -60,7 +65,69 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Método para verificar autenticação antes de navegar
+  Future<void> _openOliviaWebsite() async {
+    try {
+      final Uri url = Uri.parse('https://oliviagrupo.com.br');
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          _showSnackBar('Não foi possível abrir o site', isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Erro ao abrir site: ${e.toString()}', isError: true);
+      }
+    }
+  }
+  // Função para abrir o PDF usando URL Launcher
+  Future<void> _openPlannerPDF() async {
+
+    if (authStore.currentUser == null) {
+      _showAuthRequiredDialog();
+      return;
+    }
+    try {
+      final Uri url = Uri.parse(pdfUrl);
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          _showSnackBar('Não foi possível abrir o PDF', isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Erro ao abrir PDF: ${e.toString()}', isError: true);
+      }
+    }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.error : AppColors.primary,
+        duration: Duration(seconds: isError ? 4 : 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
   void _navigateWithAuth(String route) {
     if (authStore.currentUser == null) {
       _showAuthRequiredDialog();
@@ -69,7 +136,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Diálogo de conteúdo exclusivo
   void _showAuthRequiredDialog() {
     showDialog(
       context: context,
@@ -141,70 +207,73 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: AppColors.backgroundGradient,
-          ),
-        ),
-        centerTitle: true,
-        title: const Text(""),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(
-              Icons.more_vert,
-              color: AppColors.primary,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(35),
+        child: AppBar(
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundGradient,
             ),
-            onSelected: (value) {
-              if (value == 'profile') {
-                 if (authStore.currentUser == null ) {
-
-                   Modular.to.pushReplacementNamed('/auth/login');
-                 } else {
-
-                   _handleProfileNavigation();
-                 }
-              } else if (value == 'logout') {
-                _showLogoutDialog(context, authStore);
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'profile',
-                child: Observer(
-                  builder: (_) => ListTile(
-                    leading: Icon(
-                      profileStore.isAdmin ? Icons.people : Icons.person,
-                      color: AppColors.primary,
+          ),
+        
+          centerTitle: true,
+          title: const Text(""),
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.primary,
+              ),
+              onSelected: (value) {
+                if (value == 'profile') {
+                  if (authStore.currentUser == null) {
+                    Modular.to.pushReplacementNamed('/auth/login');
+                  } else {
+                    _handleProfileNavigation();
+                  }
+                } else if (value == 'logout') {
+                  _showLogoutDialog(context, authStore);
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'profile',
+                  child: Observer(
+                    builder: (_) => ListTile(
+                      leading: Icon(
+                        profileStore.isAdmin ? Icons.people : Icons.person,
+                        color: AppColors.primary,
+                      ),
+                      title: authStore.currentUser == null
+                          ? Text(
+                        'Login',
+                        style: const TextStyle(color: AppColors.primary),
+                      )
+                          : Text(
+                        profileStore.isAdmin ? 'Usuários' : 'Perfil',
+                        style: const TextStyle(color: AppColors.primary),
+                      ),
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    title: authStore.currentUser == null ? Text(
-                     'Login',
-                      style: const TextStyle(color: AppColors.primary),
-                    ) : Text(
-                      profileStore.isAdmin ? 'Usuários' : 'Perfil',
-                      style: const TextStyle(color: AppColors.primary),
-                    ),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: ListTile(
+                    leading: Icon(Icons.logout, color: AppColors.error),
+                    title: Text('Sair', style: TextStyle(color: AppColors.error)),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: ListTile(
-                  leading: Icon(Icons.logout, color: AppColors.error),
-                  title: Text('Sair', style: TextStyle(color: AppColors.error)),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -213,184 +282,218 @@ class _HomePageState extends State<HomePage> {
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Logo e Welcome Card
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        children: [
-                          // Logo
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: Column(
+                children: [
+                  // CONTEÚDO FIXO (SEM SCROLL)
+                  Column(
+                    children: [
+                      // Header com logo e boas-vindas
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.asset(
+                                  'assets/images/conexao_olivia.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.people_alt_rounded,
+                                        color: AppColors.white,
+                                        size: 35,
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                'assets/images/conexao_olivia.png',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Icon(
-                                      Icons.people_alt_rounded,
-                                      color: AppColors.white,
-                                      size: 35,
-                                    ),
-                                  );
-                                },
                               ),
                             ),
-                          ),
-
-                          const SizedBox(width: 16),
-
-                          // Welcome Card
-                          Expanded(
-                            child: Card(
-                              elevation: 6,
-                              child: Container(
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  color: AppColors.primary,
-                                ),
-                                child: Observer(
-                                  builder: (_) => Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Bem-vinda ',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                          color: AppColors.white.withOpacity(0.9),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Card(
+                                elevation: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: AppColors.primary,
+                                  ),
+                                  child: Observer(
+                                    builder: (_) => Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Bem-vinda ',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                            color: AppColors.white.withOpacity(0.9),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      authStore.currentUser != null ?
-                                      Text(
-                                        authStore.currentUser?.name ?? 'Usuário',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium
-                                            ?.copyWith(
-                                          color: AppColors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ) : const SizedBox(),
-                                    ],
+                                        const SizedBox(height: 4),
+                                        authStore.currentUser != null
+                                            ? Text(
+                                          authStore.currentUser?.name ?? 'Usuário',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineMedium
+                                              ?.copyWith(
+                                            color: AppColors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                            : const SizedBox(),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // NOVO: Banner do Evento em Destaque
-                    Observer(
-                      builder: (_) {
-                        if (eventStore.isLoading) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24),
-                            child: Center(
-                              child: CircularProgressIndicator(color: AppColors.primary),
-                            ),
-                          );
-                        }
+                      // Banner destaque
+                      Observer(
+                        builder: (_) {
+                          if (eventStore.isLoading) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 24),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                    color: AppColors.primary),
+                              ),
+                            );
+                          }
 
-                        final featuredEvent = eventStore.featuredEvent;
-                        if (featuredEvent != null &&
-                            featuredEvent.bannerLargeUrl != null &&
-                            featuredEvent.bannerLargeUrl!.isNotEmpty) {
-                          return _buildFeaturedEventBanner(featuredEvent);
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
+                          final featuredEvent = eventStore.featuredEvent;
+                          if (featuredEvent != null &&
+                              featuredEvent.bannerLargeUrl != null &&
+                              featuredEvent.bannerLargeUrl!.isNotEmpty) {
+                            return _buildFeaturedEventBanner(featuredEvent);
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
 
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 5),
 
-                    // NOVO: Carrossel de Próximos Eventos
-                    Observer(
-                      builder: (_) {
-                        final upcomingEvents = _getUpcomingEvents();
-                        if (upcomingEvents.isNotEmpty) {
-                          return _buildEventsCarousel(upcomingEvents);
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
+                      // Carrossel de eventos
+                      Observer(
+                        builder: (_) {
+                          final upcomingEvents = _getUpcomingEvents();
+                          if (upcomingEvents.isNotEmpty) {
+                            return _buildEventsCarousel(upcomingEvents);
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
 
-                    const SizedBox(height: 32),
+                    ],
+                  ),
 
-                    // Cards de Ação
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
+                  // CONTEÚDO ROLÁVEL
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
                         children: [
-                          _buildActionCard(
-                            context,
-                            backgroundImage: 'assets/images/calendario.png',
-                            title: 'Eventos',
-                            subtitle: 'Próximos eventos',
-                            onTap: () => _navigateWithAuth('/events/'),
+                          // GridView de ações
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              children: [
+                                _buildActionCard(
+                                  context,
+                                  backgroundImage: 'assets/images/calendario.png',
+                                  title: 'Eventos',
+                                  subtitle: 'Próximos eventos',
+                                  onTap: () => _navigateWithAuth('/events/'),
+                                ),
+                                _buildActionCard(
+                                  context,
+                                  backgroundImage: 'assets/images/quem_somos.png',
+                                  title: 'Quem Somos',
+                                  subtitle: 'Conheça nossa história',
+                                  onTap: () {
+                                    Modular.to.pushNamed('/quem-somos');
+                                  },
+                                ),
+                                _buildActionCard(
+                                  context,
+                                  backgroundImage: 'assets/images/galeria.png',
+                                  title: 'Galeria',
+                                  subtitle: 'Registros de nossos encontros',
+                                  onTap: () => _navigateWithAuth('/gallery'),
+                                ),
+                                _buildActionCard(
+                                  context,
+                                  backgroundImage: 'assets/images/parceiras.png',
+                                  title: 'Parceiras',
+                                  subtitle: 'Conheça as nossas parceiras de sucesso',
+                                  onTap: () {
+                                    Modular.to.pushNamed('/partners');
+                                  },
+                                ),
+                                _buildActionCard(
+                                  context,
+                                  backgroundImage: 'assets/images/planner.png',
+                                  title: 'Planner',
+                                  subtitle: 'Baixe agora nosso Planner',
+                                  onTap: _openPlannerPDF,
+                                ),
+                              ],
+                            ),
                           ),
-                          _buildActionCard(
-                            context,
-                            backgroundImage: 'assets/images/quem_somos.png',
-                            title: 'Quem Somos',
-                            subtitle: 'Conheça nossa história',
-                            onTap: () {
-                              Modular.to.pushNamed('/quem-somos');
-                            },
+
+                          const SizedBox(height: 24),
+
+                          // Link para o site
+                          GestureDetector(
+                            onTap: _openOliviaWebsite,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                "Acesse nosso site",
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.primary,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                           ),
-                          _buildActionCard(
-                            context,
-                            backgroundImage: 'assets/images/galeria.png',
-                            title: 'Galeria',
-                            subtitle: 'Registros de nossos encontros',
-                            onTap: () => _navigateWithAuth('/gallery'),
-                          ),
-                          _buildActionCard(
-                            context,
-                            backgroundImage: 'assets/images/parceiras.png',
-                            title: 'Parceiras',
-                            subtitle: 'Conheça as nossas parceiras de sucesso',
-                            onTap: () {
-                              Modular.to.pushNamed('/partners');
-                            },
-                          ),
+
+                          const SizedBox(height: 32),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -399,27 +502,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Navegação para Perfil ou Lista de Usuários
   void _handleProfileNavigation() async {
     if (profileStore.isAdmin) {
-      // Admin vai para lista de usuários
       Modular.to.pushNamed('/profiles/');
     } else {
-      // Usuário comum vai para edição do próprio perfil
       if (profileStore.currentUserProfile != null) {
         final formStore = Modular.get<ProfileFormStore>();
         formStore.initializeWithProfile(
           profileStore.currentUserProfile!,
-          false, // não é admin
+          false,
         );
         await Modular.to.pushNamed('/profiles/form');
-        // Recarregar perfil após edição
         await profileStore.loadProfiles();
       }
     }
   }
 
-  // NOVO: Widget do Banner em Destaque
   Widget _buildFeaturedEventBanner(Event event) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -490,7 +588,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    // Overlay com informações
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -548,7 +645,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    // Ícone de zoom
                     Positioned(
                       top: 12,
                       right: 12,
@@ -571,7 +667,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // NOVO: Carrossel de Eventos
   Widget _buildEventsCarousel(List<Event> events) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -708,7 +803,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${event.eventDate.day}/${event.eventDate.month}',
+                        '${event.eventDate.day}/${event.eventDate.month.toString().padLeft(2,"0")}',
                         style:
                         const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
